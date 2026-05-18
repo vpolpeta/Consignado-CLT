@@ -1,0 +1,235 @@
+<div class="min-h-screen bg-slate-100">
+  <!-- Header - Sleek Style -->
+  <header class="bg-white border-b border-slate-200 px-6 md:px-16 py-6 flex items-center justify-between shadow-sm">
+    <div class="text-2xl font-extrabold text-primary-600 tracking-tight flex items-center gap-1">
+      CONSIGNADO<span class="text-primary-900">PLUS</span>
+    </div>
+    <div class="hidden sm:block text-sm text-slate-500 font-medium">
+      Central de Atendimento: <strong class="text-slate-800">0800 722 0000</strong>
+    </div>
+  </header>
+
+  <!-- Main Content - Sleek Layout -->
+  <main class="max-w-4xl mx-auto px-4 py-12 md:py-20 flex flex-col items-center">
+    <div class="card-sleek w-full max-w-[650px] relative overflow-hidden">
+      
+      <!-- Success State -->
+      @if (successMessage()) {
+        <div class="py-12 text-center animate-in fade-in zoom-in duration-500">
+          <div class="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <mat-icon style="font-size: 40px; width: 40px; height: 40px;">check_circle</mat-icon>
+          </div>
+          <h2 class="text-2xl font-bold text-slate-900 mb-4">Solicitação Recebida!</h2>
+          <p class="text-slate-600 mb-8 max-w-md mx-auto leading-relaxed">
+            {{ successMessage() }}
+          </p>
+          <button (click)="reset()" class="btn-secondary mx-auto">
+            <mat-icon>refresh</mat-icon>
+            Nova Simulação
+          </button>
+        </div>
+      } @else {
+        <div class="mb-10 text-center md:text-left">
+          <div class="inline-block px-3 py-1 bg-primary-50 text-primary-700 text-[10px] font-bold rounded uppercase tracking-wider mb-4">
+            Crédito Consignado CLT
+          </div>
+          <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 mb-2">Simulação de Crédito</h1>
+          <p class="text-slate-500 text-sm">Faltam apenas alguns passos para liberar seu crédito rápido e sem burocracia.</p>
+        </div>
+
+        <!-- Form Steps -->
+        <mat-stepper #stepper [linear]="true" class="custom-stepper">
+          
+          <!-- Step 1: Eligibility -->
+          <mat-step [stepControl]="step1Form" label="Início">
+            <form [formGroup]="step1Form" class="py-4">
+              <div class="space-y-6">
+                <p class="text-sm font-bold text-slate-700">
+                  Trabalha há mais de 6 meses registrado?
+                </p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <button type="button" 
+                    (click)="checkEligibility('sim'); step1Form.patchValue({trabalhaSeisMeses: 'sim'}); stepper.next()"
+                    class="flex items-center justify-between p-5 border-2 rounded-xl hover:border-primary-600 hover:bg-primary-50/50 transition-all group"
+                    [class.border-primary-600]="step1Form.get('trabalhaSeisMeses')?.value === 'sim'"
+                    [class.bg-primary-50]="step1Form.get('trabalhaSeisMeses')?.value === 'sim'">
+                    <span class="font-bold text-slate-700 group-hover:text-primary-700">Sim, sou registrado</span>
+                    <mat-icon class="text-slate-200 group-hover:text-primary-600">check_circle</mat-icon>
+                  </button>
+                  
+                  <button type="button" 
+                    (click)="checkEligibility('nao'); step1Form.patchValue({trabalhaSeisMeses: 'nao'})"
+                    class="flex items-center justify-between p-5 border-2 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all group"
+                    [class.border-red-500]="step1Form.get('trabalhaSeisMeses')?.value === 'nao'"
+                    [class.bg-red-50]="step1Form.get('trabalhaSeisMeses')?.value === 'nao'">
+                    <span class="font-bold text-slate-700 group-hover:text-red-700">Não sou registrado</span>
+                    <mat-icon class="text-slate-200 group-hover:text-red-500">cancel</mat-icon>
+                  </button>
+                </div>
+
+                @if (isEligible() === false) {
+                  <div class="mt-8 p-6 bg-red-50 rounded-xl border border-red-100 animate-in slide-in-from-top-2">
+                    <div class="flex gap-4">
+                      <mat-icon class="text-red-500">info</mat-icon>
+                      <div class="flex-1">
+                        <h4 class="font-bold text-red-900">Sinto muito</h4>
+                        <p class="text-red-700 text-xs leading-relaxed">Lamento, mas você não é elegível ao crédito no momento. É necessário pelo menos 6 meses de registro CLT.</p>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </form>
+          </mat-step>
+
+          <!-- Step 2: Personal Info -->
+          <mat-step [stepControl]="step2Form" label="Dados">
+            <form [formGroup]="step2Form" class="py-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-1.5">
+                  <label for="cpf" class="text-xs font-bold text-slate-500 uppercase tracking-wide">CPF</label>
+                  <input id="cpf" type="text" formControlName="cpf" (input)="formatCPF($event)" placeholder="000.000.000-00" class="form-input">
+                </div>
+                
+                <div class="space-y-1.5">
+                  <label for="celular" class="text-xs font-bold text-slate-500 uppercase tracking-wide">Celular</label>
+                  <input id="celular" type="text" formControlName="celular" (input)="formatPhone($event)" placeholder="(00) 00000-0000" class="form-input">
+                </div>
+                
+                <div class="md:col-span-2 space-y-1.5">
+                  <label for="sexo" class="text-xs font-bold text-slate-500 uppercase tracking-wide">Sexo</label>
+                  <select id="sexo" formControlName="sexo" class="form-input appearance-none bg-no-repeat bg-right" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-position: right 1rem center; background-size: 1.2rem;">
+                    <option value="" disabled>Selecione seu sexo</option>
+                    <option value="masculino">Masculino</option>
+                    <option value="feminino">Feminino</option>
+                    <option value="outro">Prefiro não informar</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex flex-col-reverse sm:flex-row gap-3 justify-between mt-12">
+                <button matStepperPrevious class="btn-secondary">Voltar</button>
+                <button matStepperNext class="btn-primary" [disabled]="step2Form.invalid">Continuar</button>
+              </div>
+            </form>
+          </mat-step>
+
+          <!-- Step 3: Simulation -->
+          <mat-step [stepControl]="step3Form" label="Simulação">
+            <form [formGroup]="step3Form" class="py-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-1.5">
+                  <label for="valor" class="text-xs font-bold text-slate-500 uppercase tracking-wide">Quanto você precisa?</label>
+                  <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">R$</span>
+                    <input id="valor" type="number" formControlName="valor" placeholder="15.000,00" class="form-input !pl-10">
+                  </div>
+                  @if (step3Form.get('valor')?.hasError('min')) {
+                    <p class="text-[10px] text-red-500 font-semibold px-1">Valor mínimo permitido: R$ 500</p>
+                  }
+                </div>
+                
+                <div class="space-y-1.5">
+                  <label for="parcelas" class="text-xs font-bold text-slate-500 uppercase tracking-wide">Parcelas</label>
+                  <select id="parcelas" formControlName="parcelas" class="form-input appearance-none bg-no-repeat bg-right" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-position: right 1rem center; background-size: 1.2rem;">
+                    <option value="" disabled>Selecione as parcelas</option>
+                    <option value="12">12 meses</option>
+                    <option value="24">24 meses</option>
+                    <option value="36">36 meses</option>
+                    <option value="48">48 meses</option>
+                  </select>
+                </div>
+
+                <div class="md:col-span-2 space-y-1.5">
+                  <label for="email" class="text-xs font-bold text-slate-500 uppercase tracking-wide">E-mail para contato</label>
+                  <input id="email" type="email" formControlName="email" placeholder="seu@email.com" class="form-input">
+                </div>
+              </div>
+
+              <div class="flex flex-col-reverse sm:flex-row gap-3 justify-between mt-12">
+                <button matStepperPrevious class="btn-secondary">Voltar</button>
+                <button matStepperNext class="btn-primary" [disabled]="step3Form.invalid">Próximo Passo</button>
+              </div>
+            </form>
+          </mat-step>
+
+          <!-- Step 4: Finalization -->
+          <mat-step [stepControl]="step4Form" label="Finalizar">
+            <form [formGroup]="step4Form" class="py-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2 space-y-1.5">
+                  <label for="nome" class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome Completo</label>
+                  <input id="nome" type="text" formControlName="nome" placeholder="Digite seu nome completo" class="form-input">
+                </div>
+                
+                <div class="space-y-1.5">
+                  <label for="nascimento" class="text-xs font-bold text-slate-500 uppercase tracking-wide">Data de Nascimento</label>
+                  <input id="nascimento" type="text" formControlName="dataNascimento" (input)="formatDate($event)" placeholder="DD/MM/AAAA" class="form-input">
+                </div>
+                
+                <div class="space-y-1.5">
+                  <label for="cidade" class="text-xs font-bold text-slate-500 uppercase tracking-wide">Cidade</label>
+                  <input id="cidade" type="text" formControlName="cidade" placeholder="Sua cidade atual" class="form-input">
+                </div>
+              </div>
+
+              <div class="flex flex-col-reverse sm:flex-row gap-3 justify-between mt-12">
+                <button matStepperPrevious class="btn-secondary">Voltar</button>
+                <button type="button" (click)="submitSimulation()" class="btn-primary" [disabled]="step4Form.invalid || isSubmitting()">
+                  @if (isSubmitting()) {
+                    <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Processando...
+                  } @else {
+                    <mat-icon>verified_user</mat-icon>
+                    Confirmar Solicitação
+                  }
+                </button>
+              </div>
+              
+              @if (errorMessage()) {
+                <p class="mt-4 text-center text-xs font-semibold text-red-500">{{ errorMessage() }}</p>
+              }
+            </form>
+          </mat-step>
+
+        </mat-stepper>
+      }
+
+      <p class="mt-8 text-center text-[10px] text-slate-400 leading-relaxed">
+        Segurança garantida por criptografia de ponta a ponta. <br> 
+        Sujeito a análise cadastral de acordo com a política de crédito.
+      </p>
+    </div>
+
+    <!-- Features / Status Indicators -->
+    <div class="mt-12 flex flex-wrap justify-center gap-6 md:gap-12 items-center text-[11px] font-bold text-slate-500">
+      <div class="flex items-center gap-2">
+        <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full"></div>
+        SEM BUROCRACIA
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full"></div>
+        DEPÓSITO EM ATÉ 24H
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full"></div>
+        MELHORES TAXAS
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto bg-white border-t border-slate-200 py-10 px-6">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 opacity-60">
+      <div class="text-primary-600 font-extrabold text-sm tracking-tight">
+        CONSIGNADO<span>PLUS</span>
+      </div>
+      <p class="text-[10px] text-slate-500 text-center md:text-left">
+        &copy; 2026 Todos os direitos reservados. Sujeito à aprovação de crédito.
+      </p>
+    </div>
+  </footer>
+</div>
+
+<router-outlet />

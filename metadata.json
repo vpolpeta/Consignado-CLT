@@ -1,0 +1,6 @@
+{
+  "name": "Agilliza Crédito CLT",
+  "description": "Simulador de crédito consignado para para funcionários CLT. Rápido, fácil e sem burocracia.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

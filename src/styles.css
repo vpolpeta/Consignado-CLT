@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #0f172a;
+}
+
+body {
+  @apply bg-slate-100 text-slate-800 font-sans antialiased;
+}
+
+/* Custom Stepper Styles - Sleek Interface Pattern */
+.mat-stepper-horizontal {
+  @apply !bg-transparent;
+}
+
+.mat-horizontal-stepper-header-container {
+  @apply !mb-10 !relative;
+}
+
+.mat-step-header .mat-step-icon {
+  @apply !bg-white !text-slate-400 !border-2 !border-slate-200 !w-8 !h-8 !text-sm !font-bold transition-all duration-300;
+}
+
+.mat-step-header .mat-step-icon-selected {
+  @apply !bg-white !text-primary-600 !border-primary-600 !shadow-[0_0_0_4px_rgba(37,99,235,0.1)];
+}
+
+.mat-step-header .mat-step-icon-state-done {
+  @apply !bg-primary-600 !text-white !border-primary-600;
+}
+
+.mat-step-label {
+  @apply !font-semibold !text-slate-400 !text-[10px] !uppercase !tracking-wider transition-all duration-300;
+}
+
+.mat-step-label.mat-step-label-active {
+  @apply !text-primary-600;
+}
+
+/* Form Styles - Sleek Interface Pattern */
+.form-input {
+  @apply w-full px-4 py-3 bg-white border border-slate-300 rounded-lg focus:ring-4 focus:ring-primary-600/10 focus:border-primary-600 outline-none transition-all duration-200 text-slate-900 placeholder:text-slate-400;
+}
+
+.btn-primary {
+  @apply px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base;
+}
+
+.btn-secondary {
+  @apply px-8 py-4 bg-white hover:bg-slate-50 text-slate-600 font-bold border border-slate-200 rounded-lg transition-all duration-200 flex items-center justify-center gap-2;
+}
+
+.card-sleek {
+  @apply bg-white rounded-2xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.1)] p-10 border border-slate-100;
+}
