@@ -50,37 +50,65 @@ async function sendLeadEmail(formData: SimulationData) {
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, LEAD_RECIPIENT } = process.env;
 
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-    console.error('SMTP configuration missing. Email not sent.');
+    console.error('SMTP configuration missing. Environment variables found:', {
+      host: !!SMTP_HOST,
+      user: !!SMTP_USER,
+      pass: !!SMTP_PASS,
+    });
     return false;
   }
 
+  const port = parseInt(SMTP_PORT || '587');
+  const isSecure = port === 465;
+
   const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
-    port: parseInt(SMTP_PORT || '465'),
-    secure: SMTP_PORT === '465', // true for 465, false for other ports
+    port: port,
+    secure: isSecure,
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
     },
+    // Adding some defaults for cloud environments
+    tls: {
+      rejectUnauthorized: false
+    }
   });
 
   const mailOptions = {
     from: SMTP_FROM || SMTP_USER,
     to: LEAD_RECIPIENT || 'vpolpeta@gmail.com',
-    subject: `New Lead: ${formData.nome} - Simulation CRÉDITO CLT`,
+    subject: `💰 Novo Lead: ${formData.nome} - Simulação Agilliza`,
     html: `
-      <h2>Nova Solicitação de Simulação</h2>
-      <p><strong>Nome:</strong> ${formData.nome}</p>
-      <p><strong>CPF:</strong> ${formData.cpf}</p>
-      <p><strong>Celular:</strong> ${formData.celular}</p>
-      <p><strong>Email:</strong> ${formData.email}</p>
-      <p><strong>Data de Nascimento:</strong> ${formData.dataNascimento}</p>
-      <p><strong>Cidade:</strong> ${formData.cidade}</p>
-      <hr>
-      <p><strong>Valor Desejado:</strong> R$ ${formData.valor}</p>
-      <p><strong>Parcelas:</strong> ${formData.parcelas}x</p>
-      <p><strong>Trabalha há +6 meses:</strong> ${formData.trabalhaSeisMeses === 'sim' ? 'Sim' : 'Não'}</p>
-      <p><strong>Sexo:</strong> ${formData.sexo}</p>
+      <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
+        <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">Nova Solicitação de Simulação</h2>
+        
+        <div style="margin: 20px 0;">
+          <h3 style="color: #666;">Dados Pessoais</h3>
+          <p><strong>Nome:</strong> ${formData.nome}</p>
+          <p><strong>CPF:</strong> ${formData.cpf}</p>
+          <p><strong>Data de Nascimento:</strong> ${formData.dataNascimento}</p>
+          <p><strong>Sexo:</strong> ${formData.sexo}</p>
+        </div>
+
+        <div style="margin: 20px 0;">
+          <h3 style="color: #666;">Contato</h3>
+          <p><strong>Celular:</strong> ${formData.celular}</p>
+          <p><strong>Email:</strong> ${formData.email}</p>
+          <p><strong>Cidade:</strong> ${formData.cidade}</p>
+        </div>
+
+        <div style="margin: 20px 0; background: #f0f9ff; padding: 15px; border-radius: 8px;">
+          <h3 style="color: #0369a1;">Simulação</h3>
+          <p><strong>Valor Desejado:</strong> R$ ${formData.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+          <p><strong>Parcelas:</strong> ${formData.parcelas} meses</p>
+          <p><strong>Trabalha há +6 meses:</strong> ${formData.trabalhaSeisMeses === 'sim' ? '✅ Sim' : '❌ Não'}</p>
+        </div>
+
+        <p style="font-size: 12px; color: #999; margin-top: 30px; text-align: center; border-top: 1px solid #eee; pt: 10px;">
+          Enviado via Agilliza Simulações em ${new Date().toLocaleString('pt-BR')}
+        </p>
+      </div>
     `,
   };
 

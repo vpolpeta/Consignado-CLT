@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors} from '@angular/forms';
 import {MatStepperModule} from '@angular/material/stepper';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
@@ -39,13 +39,36 @@ export class App {
   });
 
   step2Form: FormGroup = this.fb.group({
-    cpf: ['', [Validators.required, Validators.pattern(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)]],
+    cpf: ['', [Validators.required, this.cpfValidator]],
     celular: ['', [Validators.required]],
     sexo: ['', Validators.required]
   });
 
+  cpfValidator(control: AbstractControl): ValidationErrors | null {
+    const cpf = control.value.replace(/\D/g, '');
+    if (!cpf) return null;
+    if (cpf.length !== 11) return { cpfInvalid: true };
+    if (/^(\d)\1{10}$/.test(cpf)) return { cpfInvalid: true };
+
+    let sum = 0;
+    let remainder;
+
+    for (let i = 1; i <= 9; i++) sum = sum + parseInt(cpf.substring(i - 1, i)) * (11 - i);
+    remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cpf.substring(9, 10))) return { cpfInvalid: true };
+
+    sum = 0;
+    for (let i = 1; i <= 10; i++) sum = sum + parseInt(cpf.substring(i - 1, i)) * (12 - i);
+    remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cpf.substring(10, 11))) return { cpfInvalid: true };
+
+    return null;
+  }
+
   step3Form: FormGroup = this.fb.group({
-    valor: ['', [Validators.required, Validators.min(500)]],
+    valor: ['', [Validators.required]],
     parcelas: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]]
   });
@@ -93,6 +116,17 @@ export class App {
     this.step4Form.patchValue({ dataNascimento: v });
   }
 
+  formatCurrency(event: Event) {
+    const target = event.target as HTMLInputElement;
+    let v = target.value.replace(/\D/g, '');
+    v = (Number(v) / 100).toLocaleString('pt-BR', {
+      style: 'decimal',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    this.step3Form.patchValue({ valor: v });
+  }
+
   async submitSimulation() {
     if (this.step1Form.invalid || this.step2Form.invalid || this.step3Form.invalid || this.step4Form.invalid) {
       return;
@@ -101,10 +135,15 @@ export class App {
     this.isSubmitting.set(true);
     this.errorMessage.set(null);
 
+    // Deep copy data and clean currency/CPF/Phone/Date masks if needed
+    // The server expects number for 'valor'
+    const cleanValor = Number(this.step3Form.get('valor')?.value.replace(/\./g, '').replace(',', '.'));
+
     const fullData = {
       ...this.step1Form.value,
       ...this.step2Form.value,
       ...this.step3Form.value,
+      valor: cleanValor,
       ...this.step4Form.value
     };
 
